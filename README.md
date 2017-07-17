@@ -19,7 +19,7 @@ Built by Rich Plastow and Monty Anderson for Loop.Coop.
 App
 ---
 + __Last update:__  2017/07/17
-+ __Version:__      0.0.8
++ __Version:__      0.0.9
 
 
 Tested
@@ -41,3 +41,4 @@ Changelog
 + 0.0.6       Correct hash-test in support/test-specific-browser.js
 + 0.0.7       Move to github.com/loopdotcoop/seqin-si
 + 0.0.8       ‘ready’ property and getBuffers() return Promises
++ 0.0.9       Rename getBuffers() to perform()

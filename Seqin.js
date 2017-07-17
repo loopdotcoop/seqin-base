@@ -3,7 +3,7 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.8'    }
+  , VERSION: { value:'0.0.9'    }
   , SPEC:    { value:'20170705' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
@@ -93,11 +93,11 @@ SEQIN.Seqin = class {
     }
 
 
-    getBuffers(config) {
+    perform(config) {
 
         //// Validate the configuration object.
         if ('object' !== typeof config)
-            throw new Error(`Seqin:getBuffers(): config is type ${typeof config} not object`)
+            throw new Error(`Seqin:perform(): config is type ${typeof config} not object`)
         ;[
             { name:'bufferCount'    , type:'number', min:1, max:65535, mod:1 }
           , { name:'cyclesPerBuffer', type:'number', min:1, max:65535, mod:1 }
@@ -107,19 +107,19 @@ SEQIN.Seqin = class {
             const value = config[valid.name]
             const realType = typeof value
             if (realType !== valid.type)
-                throw new TypeError(`Seqin:getBuffers(): config.${valid.name} is type ${realType} not ${valid.type}`)
+                throw new TypeError(`Seqin:perform(): config.${valid.name} is type ${realType} not ${valid.type}`)
             if (null != valid.min && valid.min > value)
-                throw new RangeError(`Seqin:getBuffers(): config.${valid.name} is less than the minimum ${valid.min}`)
+                throw new RangeError(`Seqin:perform(): config.${valid.name} is less than the minimum ${valid.min}`)
             if (null != valid.max && valid.max < value)
-                throw new RangeError(`Seqin:getBuffers(): config.${valid.name} is greater than the maximum ${valid.max}`)
+                throw new RangeError(`Seqin:perform(): config.${valid.name} is greater than the maximum ${valid.max}`)
             if (null != valid.mod && value % valid.mod)
-                throw new RangeError(`Seqin:getBuffers(): config.${valid.name} leaves a remainder when divided by ${valid.mod}`)
+                throw new RangeError(`Seqin:perform(): config.${valid.name} leaves a remainder when divided by ${valid.mod}`)
         })
 
         //// Seqin only allows waveforms with whole-number lengths.
         const samplesPerCycle = this.samplesPerBuffer / config.cyclesPerBuffer
         if (samplesPerCycle !== ~~samplesPerCycle)
-            throw new Error('Seqin:getBuffers() samplesPerBuffer/cyclesPerBuffer is not an integer')
+            throw new Error('Seqin:perform() samplesPerBuffer/cyclesPerBuffer is not an integer')
 
         //// Validate the config.events array.
         //// Note that the base Seqin class only creates silent buffers, so the
@@ -127,20 +127,20 @@ SEQIN.Seqin = class {
         //// parity with Seqin sub-classes.
         const events = config.events
         if (! Array.isArray(events) )
-            throw new Error(`Seqin:getBuffers(): config.events is not an array`)
+            throw new Error(`Seqin:perform(): config.events is not an array`)
         events.forEach( (event, i) => {
             if ('object' !== typeof event)
-                throw new Error(`Seqin:getBuffers(): config.events[${i}] is not an object`)
+                throw new Error(`Seqin:perform(): config.events[${i}] is not an object`)
             if ('number' !== typeof event.at)
-                throw new Error(`Seqin:getBuffers(): config.events[${i}].at is not a number`)
+                throw new Error(`Seqin:perform(): config.events[${i}].at is not a number`)
             if (null == event.up && null == event.down)
-                throw new Error(`Seqin:getBuffers(): config.events[${i}] does not specify an action`)
+                throw new Error(`Seqin:perform(): config.events[${i}] does not specify an action`)
             if (null != event.up && null != event.down)
-                throw new Error(`Seqin:getBuffers(): config.events[${i}] has more than one action`)
+                throw new Error(`Seqin:perform(): config.events[${i}] has more than one action`)
             if ( null != event.up && ('number' !== typeof event.up || 0 > event.up || 1 < event.up) )
-                throw new Error(`Seqin:getBuffers(): config.events[${i}].up is invalid`)
+                throw new Error(`Seqin:perform(): config.events[${i}].up is invalid`)
             if ( null != event.down && ('number' !== typeof event.down || 0 > event.down || 1 < event.down) )
-                throw new Error(`Seqin:getBuffers(): config.events[${i}].down is invalid`)
+                throw new Error(`Seqin:perform(): config.events[${i}].down is invalid`)
         })
 
         //// Run _buildBuffers() when this Seqin instance is ready.

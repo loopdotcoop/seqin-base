@@ -20,7 +20,7 @@ const
 describe(`Test common browser '${ROOT.TestClassName}'`, () => {
 
 
-	describe('getBuffers()', () => {
+	describe('perform()', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
         const testInstance = new TestClass({
@@ -38,15 +38,15 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , isLooping:       true
               , events:          []
             }
-    		eq(typeof testInstance.getBuffers, 'function', 'testInstance.getBuffers is not a function')
-    		ok(typeof testInstance.getBuffers(testConfig), 'object', 'testInstance.getBuffers does not return an object')
-    		ok(testInstance.getBuffers(testConfig) instanceof Promise, 'testInstance.getBuffers does not return a Promise')
+    		eq(typeof testInstance.perform, 'function', 'testInstance.perform is not a function')
+    		ok(typeof testInstance.perform(testConfig), 'object', 'testInstance.perform does not return an object')
+    		ok(testInstance.perform(testConfig) instanceof Promise, 'testInstance.perform does not return a Promise')
     	})
     })
 
 
 
-	describe('Promise returned by getBuffers()', () => {
+	describe('Promise returned by perform()', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
 
@@ -58,7 +58,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , sampleRate:       23400
               , channelCount:     1
             })
-            const bufferProm = testInstance.getBuffers({
+            const bufferProm = testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 234
               , isLooping:       true
@@ -77,7 +77,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , sampleRate:       23400
               , channelCount:     1 // mono
             })
-            const bufferProm = testInstance.getBuffers({
+            const bufferProm = testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 234
               , isLooping:       true
@@ -110,7 +110,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
             eq(testInstance.isReady, false, 'isReady is not false')
             return readyProm.then( response => {
                 eq(testInstance.isReady, true, 'isReady is not true')
-                const bufferProm = testInstance.getBuffers({
+                const bufferProm = testInstance.perform({
                     bufferCount:     4
                   , cyclesPerBuffer: 234
                   , isLooping:       true

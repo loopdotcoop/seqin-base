@@ -17,7 +17,7 @@ const
 
 describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
 
-	describe('getBuffers() response', () => {
+	describe('perform() response', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
 
@@ -29,7 +29,7 @@ describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
               , sampleRate:       23400
               , channelCount:     2
             })
-            return testInstance.getBuffers({
+            return testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 234
               , isLooping:       true

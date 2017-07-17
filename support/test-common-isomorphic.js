@@ -297,7 +297,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
     })
 
-	describe('getBuffers() config', () => {
+	describe('perform() config', () => {
         const ctx = {}
         const cache = {}
         const testInstance = new TestClass({
@@ -309,36 +309,36 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
         })
 
     	it(`should be an object`, () => {
-            expect( () => { testInstance.getBuffers() } )
+            expect( () => { testInstance.perform() } )
                .to.throw('config is type undefined not object')
-            expect( () => { testInstance.getBuffers(true) } )
+            expect( () => { testInstance.perform(true) } )
                .to.throw('config is type boolean not object')
     	})
 
 
     	it(`should contain values of expected type`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     false
               , cyclesPerBuffer: 123
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.bufferCount is type boolean not number')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: /nope/
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.cyclesPerBuffer is type object not number')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 123
               , isLooping:       null
               , events:          []
             }) } )
                .to.throw('config.isLooping is type object not boolean')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 123
               , isLooping:       true
@@ -348,21 +348,21 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     	})
 
     	it(`bufferCount should contain values within range`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     0
               , cyclesPerBuffer: 123
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.bufferCount is less than the minimum 1')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     65536
               , cyclesPerBuffer: 123
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.bufferCount is greater than the maximum 65535')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     123.4
               , cyclesPerBuffer: 123
               , isLooping:       true
@@ -372,21 +372,21 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     	})
 
     	it(`cyclesPerBuffer should contain values within range`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 0
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.cyclesPerBuffer is less than the minimum 1')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 65536
               , isLooping:       true
               , events:          []
             }) } )
                .to.throw('config.cyclesPerBuffer is greater than the maximum 65535')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 123.4
               , isLooping:       true
@@ -396,7 +396,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     	})
 
     	it(`samplesPerBuffer/cyclesPerBuffer must be an integer`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 124
               , isLooping:       true
@@ -407,7 +407,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
 
     	it(`config.events should be an array`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 123
               , isLooping:       true
@@ -418,52 +418,52 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
 
     	it(`config.events should only contain valid 'event' objects`, () => {
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:1}, {at:456,up:1}, 'whoops!', {at:789,down:1} ]
             }) } )
                .to.throw('config.events[2] is not an object')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:1}, {} ]
             }) } )
                .to.throw('config.events[1].at is not a number')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:1}, {at:-123.456} ]
             }) } )
                .to.throw('config.events[1] does not specify an action')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:1,up:0} ]
             }) } )
                .to.throw('config.events[0] has more than one action')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,up:true} ]
             }) } )
                .to.throw('config.events[0].up is invalid')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,up:1.0001} ]
             }) } )
                .to.throw('config.events[0].up is invalid')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,up:-0.0001} ]
             }) } )
                .to.throw('config.events[0].up is invalid')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:'1'} ]
             }) } )
                .to.throw('config.events[0].down is invalid')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:1.0001} ]
             }) } )
                .to.throw('config.events[0].down is invalid')
-            expect( () => { testInstance.getBuffers({
+            expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:-0.0001} ]
             }) } )
