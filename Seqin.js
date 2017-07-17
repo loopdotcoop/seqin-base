@@ -3,7 +3,7 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.7'    }
+  , VERSION: { value:'0.0.8'    }
   , SPEC:    { value:'20170705' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
@@ -17,6 +17,16 @@ const SEQIN = ROOT.SEQIN = ROOT.SEQIN || {}
 SEQIN.Seqin = class {
 
     constructor (config) {
+
+        //// Record instantiation time.
+        Object.defineProperty(this, 'instantiatedAt', { value:performance.now() })
+
+        //// A private array of `ready` Promises.
+        Object.defineProperty(this, '_promises', { value:{} })
+        Object.defineProperty(this._promises, 'ready', { value:[] })
+
+        //// Will be changed to true when _setup() has completed.
+        Object.defineProperty(this, 'isReady', { value:false, configurable:true, writable:false })
 
         //// Validate the configuration object, and record its values as
         //// immutable properties.
@@ -42,6 +52,44 @@ SEQIN.Seqin = class {
             Object.defineProperty(this, valid.name, { value })
         })
 
+        //// Begin setup.
+        this._setup()
+    }
+
+
+    _resolveReadyPromises () {
+        const response = {
+            delay: performance.now() - this.instantiatedAt
+        }
+        let promise
+        while ( promise = this._promises.ready.shift() )
+            promise.resolve(response)
+    }
+
+
+    _setup () {
+        if (this.isReady) throw new Error(`Seqin:_setup(): Can only run once`)
+
+        //// seqin-si has no setup to do, so we could resolve `ready` Promises
+        //// immediately. However, to make _setup()’s behavior consistent with
+        //// Seqins which have a slow async setup, we introduce a delay.
+        setTimeout(
+            () => {
+                Object.defineProperty(this, 'isReady', { writable:true }) // make writable
+                Object.defineProperty(this, 'isReady', { value:true, configurable:false, writable:false }) // unwritable and unconfigurable
+                this._resolveReadyPromises()
+            }
+          , 50
+        )
+
+    }
+
+
+    get ready () {
+        return new Promise( (resolve, reject) => {
+            this._promises.ready.push({ resolve, reject })
+            if (this.isReady) this._resolveReadyPromises()
+        })
     }
 
 
@@ -95,6 +143,21 @@ SEQIN.Seqin = class {
                 throw new Error(`Seqin:getBuffers(): config.events[${i}].down is invalid`)
         })
 
+        //// Run _buildBuffers() when this Seqin instance is ready.
+        return new Promise( (resolve, reject) => {
+            if (this.isReady)
+                this._buildBuffers(config, resolve, reject)
+            else
+                this._promises.ready.push({
+                    reject
+                  , resolve: () => this._buildBuffers(config, resolve, reject)
+                })
+        })
+    }
+
+
+    _buildBuffers(config, resolve, reject) {
+
         //// The base Seqin class just returns silence.
         const buffers = []
         for (let i=0; i<config.bufferCount; i++) {
@@ -107,8 +170,9 @@ SEQIN.Seqin = class {
                 )
             }) // developer.mozilla.org/en-US/docs/Web/API/AudioContext/createBuffer#Syntax
         }
-        return buffers
 
+        //// Return the silent buffers.
+        resolve(buffers)
     }
 
 }

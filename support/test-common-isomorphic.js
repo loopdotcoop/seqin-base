@@ -10,6 +10,7 @@ const
   , a         = isBrowser ? chai.assert : require('chai').assert
   , expect    = isBrowser ? chai.expect : require('chai').expect
   , eq        = a.strictEqual
+  , ok        = a.isOk
 
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
     //// window.TestClassName = 'MyGreatSeqin' // browser
@@ -40,6 +41,47 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
         	})
         })
 
+    })
+
+	describe('Instance properties (not from config)', () => {
+        const ctx = {}
+        const cache = {}
+
+    	it(`instance properties as expected`, () => {
+            const testInstance = new TestClass({
+                audioContext:     ctx
+              , sharedCache:      cache
+              , samplesPerBuffer: 123
+              , sampleRate:       22050
+              , channelCount:     2
+            })
+    		eq(typeof testInstance.instantiatedAt,          'number', 'testInstance.instantiatedAt wrong type')
+    		eq(typeof testInstance._promises,               'object', 'testInstance._promises wrong type')
+    		eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready wrong type')
+    		ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready not an array')
+    		eq(testInstance._promises.ready.length,         0,        'testInstance._promises.ready empty')
+    		eq(testInstance.isReady,                        false,    'testInstance.isReady not false')
+    	})
+
+    	it(`instance properties should be immutable`, () => {
+            const testInstance = new TestClass({
+                audioContext:     ctx
+              , sharedCache:      cache
+              , samplesPerBuffer: 123
+              , sampleRate:       22050
+              , channelCount:     2
+            })
+            const origIAt = testInstance.instantiatedAt
+            testInstance.instantiatedAt = 123456
+            testInstance._promises = 'oops'
+            delete testInstance._promises.ready
+            testInstance.isReady = /foo/
+    		eq(testInstance.instantiatedAt,                 origIAt,  'testInstance.instantiatedAt mutable')
+    		eq(typeof testInstance._promises,               'object', 'testInstance._promises mutable')
+    		eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready mutable')
+    		ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready mutable')
+    		eq(testInstance.isReady,                        false,    'testInstance.isReady mutable')
+    	})
     })
 
 	describe('Instantiation config', () => {
@@ -206,8 +248,54 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
         		eq(testInstance.channelCount,     2,     'testInstance.channelCount fail')
         	})
         }
+
     })
 
+
+	describe('The `ready` property', () => {
+        const ctx = {}
+        const cache = {}
+
+    	it(`should be an immutable Promise`, () => {
+            const testInstance = new TestClass({
+                audioContext:     ctx
+              , sharedCache:      cache
+              , samplesPerBuffer: 123
+              , sampleRate:       45678
+              , channelCount:     1
+            })
+    		eq(typeof testInstance.ready, 'object', 'testInstance.ready is not an object')
+    		ok(testInstance.ready instanceof Promise, 'testInstance.ready is not a Promise')
+            testInstance.ready = 44
+    		eq(typeof testInstance.ready, 'object', 'testInstance.ready is not immutable')
+    	})
+
+        it('Should resolve to an object', () => {
+            const testInstance = new TestClass({
+                audioContext:     ctx
+              , sharedCache:      cache
+              , samplesPerBuffer: 123
+              , sampleRate:       45678
+              , channelCount:     1
+            })
+            const prom1 = testInstance.ready
+            const prom2 = testInstance.ready
+            eq(testInstance.isReady, false, 'isReady is not false')
+            eq(testInstance._promises.ready.length, 2, 'wrong number of outstanding ready-promises')
+            return prom1.then( response => {
+                eq(typeof response, 'object', 'the response is not an object')
+                eq(typeof response.delay, 'number', 'the response has no `delay` number')
+                eq(testInstance._promises.ready.length, 0, 'unexpected outstanding ready-promises')
+                eq(testInstance.isReady, true, 'isReady is not true')
+                testInstance.isReady = 456
+                eq(testInstance.isReady, true, 'isReady is not immutable')
+                return testInstance.ready.then( response => {
+                    eq(typeof response.delay, 'number', 'new Promises not fulfilled after isReady becomes true')
+                })
+            }) // no `.catch(...)`, Mocha knows how to deal with a rejected promise
+        })
+
+    })
 
 	describe('getBuffers() config', () => {
         const ctx = {}
@@ -226,6 +314,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             expect( () => { testInstance.getBuffers(true) } )
                .to.throw('config is type boolean not object')
     	})
+
 
     	it(`should contain values of expected type`, () => {
             expect( () => { testInstance.getBuffers({
@@ -383,6 +472,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
            //@TODO NEXT valid event objects
 
     	})
+
     })
 
 })
