@@ -1,15 +1,14 @@
 {
   "name": "seqin-si",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "The base class for all sequencer instruments",
   "main": "Seqin.js",
   "directories": {
     "example": "support"
   },
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
-    "chai": "^4.0.2",
-    "mocha": "^3.4.2"
   },
   "scripts": {
     "test": "mocha support/test.js"
