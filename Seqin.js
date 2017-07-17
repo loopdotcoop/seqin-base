@@ -3,11 +3,15 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.9'    }
+  , VERSION: { value:'0.0.10'    }
   , SPEC:    { value:'20170705' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
 it just generates silent buffers.` }
+
+  , CONSTRUCTOR: [
+
+    ]
 }
 
 //// Make available on the window (browser) or global (Node.js)
@@ -15,6 +19,16 @@ const SEQIN = ROOT.SEQIN = ROOT.SEQIN || {}
 
 
 SEQIN.Seqin = class {
+
+    validConfig () {
+        return [
+            { name:'audioContext'    , type:'object' }
+          , { name:'sharedCache'     , type:'object' }
+          , { name:'samplesPerBuffer', type:'number', min:8, max:96000, mod:1 } // fidelity
+          , { name:'sampleRate'      , type:'number', min:22050, max:96000, mod:1 } // developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext/OfflineAudioContext
+          , { name:'channelCount'    , type:'number', min:1, max:32, mod:1 }
+        ]
+    }
 
     constructor (config) {
 
@@ -32,17 +46,10 @@ SEQIN.Seqin = class {
         //// immutable properties.
         if ('object' !== typeof config)
             throw new Error(`Seqin(): config is type ${typeof config} not object`)
-        ;[
-            { name:'audioContext'    , type:'object' }
-          , { name:'sharedCache'     , type:'object' }
-          , { name:'samplesPerBuffer', type:'number', min:8, max:96000, mod:1 } // fidelity
-          , { name:'sampleRate'      , type:'number', min:22050, max:96000, mod:1 } // developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext/OfflineAudioContext
-          , { name:'channelCount'    , type:'number', min:1, max:32, mod:1 }
-        ].forEach( valid => {
+        this.validConfig().forEach( valid => {
             const value = config[valid.name]
-            const realType = typeof value
-            if (realType !== valid.type)
-                throw new TypeError(`Seqin(): config.${valid.name} is type ${realType} not ${valid.type}`)
+            if (typeof value !== valid.type)
+                throw new TypeError(`Seqin(): config.${valid.name} is type ${typeof value} not ${valid.type}`)
             if (null != valid.min && valid.min > value)
                 throw new RangeError(`Seqin: config.${valid.name} is less than the minimum ${valid.min}`)
             if (null != valid.max && valid.max < value)
@@ -96,52 +103,8 @@ SEQIN.Seqin = class {
     perform(config) {
 
         //// Validate the configuration object.
-        if ('object' !== typeof config)
-            throw new Error(`Seqin:perform(): config is type ${typeof config} not object`)
-        ;[
-            { name:'bufferCount'    , type:'number', min:1, max:65535, mod:1 }
-          , { name:'cyclesPerBuffer', type:'number', min:1, max:65535, mod:1 }
-          , { name:'isLooping'      , type:'boolean' }
-          , { name:'events'         , type:'object' }
-        ].forEach( valid => {
-            const value = config[valid.name]
-            const realType = typeof value
-            if (realType !== valid.type)
-                throw new TypeError(`Seqin:perform(): config.${valid.name} is type ${realType} not ${valid.type}`)
-            if (null != valid.min && valid.min > value)
-                throw new RangeError(`Seqin:perform(): config.${valid.name} is less than the minimum ${valid.min}`)
-            if (null != valid.max && valid.max < value)
-                throw new RangeError(`Seqin:perform(): config.${valid.name} is greater than the maximum ${valid.max}`)
-            if (null != valid.mod && value % valid.mod)
-                throw new RangeError(`Seqin:perform(): config.${valid.name} leaves a remainder when divided by ${valid.mod}`)
-        })
-
-        //// Seqin only allows waveforms with whole-number lengths.
-        const samplesPerCycle = this.samplesPerBuffer / config.cyclesPerBuffer
-        if (samplesPerCycle !== ~~samplesPerCycle)
-            throw new Error('Seqin:perform() samplesPerBuffer/cyclesPerBuffer is not an integer')
-
-        //// Validate the config.events array.
-        //// Note that the base Seqin class only creates silent buffers, so the
-        //// events don’t make any difference. Validation is included here for
-        //// parity with Seqin sub-classes.
-        const events = config.events
-        if (! Array.isArray(events) )
-            throw new Error(`Seqin:perform(): config.events is not an array`)
-        events.forEach( (event, i) => {
-            if ('object' !== typeof event)
-                throw new Error(`Seqin:perform(): config.events[${i}] is not an object`)
-            if ('number' !== typeof event.at)
-                throw new Error(`Seqin:perform(): config.events[${i}].at is not a number`)
-            if (null == event.up && null == event.down)
-                throw new Error(`Seqin:perform(): config.events[${i}] does not specify an action`)
-            if (null != event.up && null != event.down)
-                throw new Error(`Seqin:perform(): config.events[${i}] has more than one action`)
-            if ( null != event.up && ('number' !== typeof event.up || 0 > event.up || 1 < event.up) )
-                throw new Error(`Seqin:perform(): config.events[${i}].up is invalid`)
-            if ( null != event.down && ('number' !== typeof event.down || 0 > event.down || 1 < event.down) )
-                throw new Error(`Seqin:perform(): config.events[${i}].down is invalid`)
-        })
+        this._validCommonPerfom(config)
+        this._validSpecificPerfom(config)
 
         //// Run _buildBuffers() when this Seqin instance is ready.
         return new Promise( (resolve, reject) => {
@@ -153,6 +116,84 @@ SEQIN.Seqin = class {
                   , resolve: () => this._buildBuffers(config, resolve, reject)
                 })
         })
+    }
+
+
+    validPerform() {
+        return [
+            { name:'bufferCount'    , type:'number', min:1, max:65535, mod:1 }
+          , { name:'cyclesPerBuffer', type:'number', min:1, max:65535, mod:1 }
+          , { name:'isLooping'      , type:'boolean' }
+          , { name:'events'         , type:'object' }
+        ]
+    }
+
+
+    validAction() {
+        return [
+            { name:'down', type:'number', min:0, max:1, mod:0.1 }
+          , { name:'gain', type:'number', min:0, max:1, mod:0.1 }
+        ]
+    }
+
+
+    _validCommonPerfom (config) {
+
+        if ('object' !== typeof config)
+            throw new Error(`Seqin:_validCommonPerfom(): config is type ${typeof config} not object`)
+        this.validPerform().forEach( valid => {
+            const value = config[valid.name]
+            if (typeof value !== valid.type)
+                throw new TypeError(`Seqin:_validCommonPerfom(): config.${valid.name} is type ${typeof value} not ${valid.type}`)
+            if (null != valid.min && valid.min > value)
+                throw new RangeError(`Seqin:_validCommonPerfom(): config.${valid.name} is less than the minimum ${valid.min}`)
+            if (null != valid.max && valid.max < value)
+                throw new RangeError(`Seqin:_validCommonPerfom(): config.${valid.name} is greater than the maximum ${valid.max}`)
+            if (null != valid.mod && ((value/valid.mod) % 1))
+                throw new RangeError(`Seqin:_validCommonPerfom(): config.${valid.name} ${value} leaves remainder ${(value/valid.mod) % 1} when divided by ${valid.mod}`)
+        })
+
+        //// Seqin only allows waveforms with whole-number lengths.
+        const samplesPerCycle = this.samplesPerBuffer / config.cyclesPerBuffer
+        if (samplesPerCycle !== ~~samplesPerCycle)
+            throw new Error('Seqin:_validCommonPerfom() samplesPerBuffer/cyclesPerBuffer is not an integer')
+
+        //// Validate the config.events array.
+        //// Note that the base Seqin class only creates silent buffers, so the
+        //// events don’t make any difference. Validation is included here for
+        //// parity with Seqin sub-classes.
+        if (! Array.isArray(config.events) )
+            throw new Error(`Seqin:_validCommonPerfom(): config.events is not an array`)
+        const validAction = this.validAction()
+        config.events.forEach( (event, i) => {
+            if ('object' !== typeof event)
+                throw new TypeError(`Seqin:_validCommonPerfom(): config.events[${i}] is not an object`)
+            if ('number' !== typeof event.at)
+                throw new TypeError(`Seqin:_validCommonPerfom(): config.events[${i}].at is not a number`)
+            let actionName = null
+            validAction.forEach( valid => {
+                const value = event[valid.name]
+                if (null == value) return
+                if (actionName)
+                    throw new Error(`Seqin:_validCommonPerfom(): config.events[${i}] has more than one action`)
+                if (typeof value !== valid.type)
+                    throw new TypeError(`Seqin:_validCommonPerfom(): config.events[${i}].${valid.name} is type ${typeof value} not ${valid.type}`)
+                if (null != valid.min && valid.min > value)
+                    throw new RangeError(`Seqin:_validCommonPerfom(): config.events[${i}].${valid.name} is less than the minimum ${valid.min}`)
+                if (null != valid.max && valid.max < value)
+                    throw new RangeError(`Seqin:_validCommonPerfom(): config.events[${i}].${valid.name} is greater than the maximum ${valid.max}`)
+                if (null != valid.mod && (value/valid.mod) % 1)
+                    throw new RangeError(`Seqin:_validCommonPerfom(): config.events[${i}].${valid.name} ${value} leaves remainder ${(value/valid.mod) % 1} when divided by ${valid.mod}`)
+                actionName = valid.name
+            })
+            if (! actionName)
+                throw new Error(`Seqin:_validCommonPerfom(): config.events[${i}] does not specify an action`)
+        })
+
+    }
+
+
+    _validSpecificPerfom (config) {
     }
 
 
