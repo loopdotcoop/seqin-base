@@ -420,24 +420,25 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     	it(`config.events should only contain valid 'event' objects`, () => {
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:1}, {at:456,down:0.5}, 'whoops!', {at:789,down:0} ]
+              , events: [ {at:123,down:9}, {at:456,down:0}, 'whoops!', {at:789,down:0} ]
             }) } )
                .to.throw('config.events[2] is not an object')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:1}, {} ]
+              , events: [ {at:123,down:5}, {} ]
             }) } )
                .to.throw('config.events[1].at is not a number')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:1}, {at:-123.456} ]
+              , events: [ {at:123,down:5}, {at:-123.456} ]
             }) } )
                .to.throw('config.events[1] does not specify an action')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:1,gain:0} ]
+              , events: [ {at:123,down:5,gain:0} ]
             }) } )
                .to.throw('config.events[0] has more than one action')
+
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:true} ]
@@ -445,39 +446,40 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
                .to.throw('config.events[0].down is type boolean not number')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:1.0001} ]
+              , events: [ {at:123,down:10} ]
             }) } )
-               .to.throw('config.events[0].down is greater than the maximum 1')
+               .to.throw('config.events[0].down is greater than the maximum 9')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:-0.0001} ]
+              , events: [ {at:123,down:-1} ]
             }) } )
                .to.throw('config.events[0].down is less than the minimum 0')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,gain:'1'} ]
+              , events: [ {at:123,down:5.5} ]
+            }) } )
+               .to.throw('config.events[0].down 5.5 leaves remainder 0.5 when divided by 1')
+
+            expect( () => { testInstance.perform({
+                bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
+              , events: [ {at:123,gain:'5'} ]
             }) } )
                .to.throw('config.events[0].gain is type string not number')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:0.0001} ]
+              , events: [ {at:123,gain:10} ]
             }) } )
-               .to.throw('config.events[0].down 0.0001 leaves remainder 0.001 when divided by 0.1')
+               .to.throw('config.events[0].gain is greater than the maximum 9')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,gain:1.0001} ]
-            }) } )
-               .to.throw('config.events[0].gain is greater than the maximum 1')
-            expect( () => { testInstance.perform({
-                bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,gain:-0.0001} ]
+              , events: [ {at:123,gain:-1} ]
             }) } )
                .to.throw('config.events[0].gain is less than the minimum 0')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,gain:0.41} ]
             }) } )
-               .to.throw('config.events[0].gain 0.41 leaves remainder 0.09999999999999964 when divided by 0.1')
+               .to.throw('config.events[0].gain 0.41 leaves remainder 0.41 when divided by 1')
 
            //@TODO valid event objects
 

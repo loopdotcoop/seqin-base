@@ -3,7 +3,7 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.11'    }
+  , VERSION: { value:'0.0.12'    }
   , SPEC:    { value:'20170705' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
@@ -131,8 +131,8 @@ SEQIN.Seqin = class {
 
     validAction() {
         return [
-            { name:'down', type:'number', min:0, max:1, mod:0.1 }
-          , { name:'gain', type:'number', min:0, max:1, mod:0.1 }
+            { name:'down', type:'number', min:0, max:9, mod:1 }
+          , { name:'gain', type:'number', min:0, max:9, mod:1 }
         ]
     }
 
