@@ -37,7 +37,6 @@ SEQIN.Seqin = class {
 
         //// A private array of `ready` Promises.
         Object.defineProperty(this, '_promises', { value:{} })
-        Object.defineProperty(this._promises, 'ready', { value:[] })
 
         //// Will be changed to true when _setup() has completed.
         Object.defineProperty(this, 'isReady', { value:false, configurable:true, writable:false })
@@ -60,18 +59,18 @@ SEQIN.Seqin = class {
         })
 
         //// Begin setup.
-        this._setup()
+		const ready = this._setup();
+		console.log("ready", ready);
+        Object.defineProperty(this, "ready", { value: ready });
     }
 
 
-    _resolveReadyPromises () {
-        const response = {
-            delay: performance.now() - this.instantiatedAt
-        }
-        let promise
-        while ( promise = this._promises.ready.shift() )
-            promise.resolve(response)
-    }
+    // _resolveReadyPromises () {
+    //     const response =
+    //     let promise
+    //     while ( promise = this._promises.ready.shift() )
+    //         promise.resolve(response)
+    // }
 
 
     _setup () {
@@ -80,42 +79,31 @@ SEQIN.Seqin = class {
         //// seqin-si has no setup to do, so we could resolve `ready` Promises
         //// immediately. However, to make _setup()’s behavior consistent with
         //// Seqins which have a slow async setup, we introduce a delay.
-        setTimeout(
-            () => {
-                Object.defineProperty(this, 'isReady', { writable:true }) // make writable
-                Object.defineProperty(this, 'isReady', { value:true, configurable:false, writable:false }) // unwritable and unconfigurable
-                this._resolveReadyPromises()
-            }
-          , 50
-        )
 
+		return new Promise((resolve, reject) => {
+			setTimeout(
+				() => {
+					Object.defineProperty(this, 'isReady', { writable:true }) // make writable
+					Object.defineProperty(this, 'isReady', { value:true, configurable:false, writable:false }) // unwritable and unconfigurable
+
+					resolve({
+			            delay: performance.now() - this.instantiatedAt
+			        });
+				}
+			  , 50
+			)
+		});
     }
-
-
-    get ready () {
-        return new Promise( (resolve, reject) => {
-            this._promises.ready.push({ resolve, reject })
-            if (this.isReady) this._resolveReadyPromises()
-        })
-    }
-
 
     perform(config) {
+		return this.ready.then(() => {
+			//// Validate the configuration object.
+			this._validCommonPerfom(config)
+			this._validSpecificPerfom(config)
 
-        //// Validate the configuration object.
-        this._validCommonPerfom(config)
-        this._validSpecificPerfom(config)
-
-        //// Run _buildBuffers() when this Seqin instance is ready.
-        return new Promise( (resolve, reject) => {
-            if (this.isReady)
-                this._buildBuffers(config, resolve, reject)
-            else
-                this._promises.ready.push({
-                    reject
-                  , resolve: () => this._buildBuffers(config, resolve, reject)
-                })
-        })
+			//// Run _buildBuffers() when this Seqin instance is ready.
+			return this._buildBuffers(config);
+		})
     }
 
 
@@ -197,7 +185,7 @@ SEQIN.Seqin = class {
     }
 
 
-    _buildBuffers(config, resolve, reject) {
+    _buildBuffers(config) {
 
         //// The base Seqin class just returns silence.
         const buffers = []
@@ -213,7 +201,7 @@ SEQIN.Seqin = class {
         }
 
         //// Return the silent buffers.
-        resolve(buffers)
+        return Promsie.resolve(buffers)
     }
 
 }

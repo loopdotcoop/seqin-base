@@ -56,10 +56,10 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     2
             })
     		eq(typeof testInstance.instantiatedAt,          'number', 'testInstance.instantiatedAt wrong type')
-    		eq(typeof testInstance._promises,               'object', 'testInstance._promises wrong type')
-    		eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready wrong type')
-    		ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready not an array')
-    		eq(testInstance._promises.ready.length,         0,        'testInstance._promises.ready empty')
+    		// eq(typeof testInstance._promises,               'object', 'testInstance._promises wrong type')
+    		// eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready wrong type')
+    		// ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready not an array')
+    		// eq(testInstance._promises.ready.length,         0,        'testInstance._promises.ready empty')
     		eq(testInstance.isReady,                        false,    'testInstance.isReady not false')
     	})
 
@@ -73,13 +73,13 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             })
             const origIAt = testInstance.instantiatedAt
             testInstance.instantiatedAt = 123456
-            testInstance._promises = 'oops'
-            delete testInstance._promises.ready
+            // testInstance._promises = 'oops'
+            // delete testInstance._promises.ready
             testInstance.isReady = /foo/
     		eq(testInstance.instantiatedAt,                 origIAt,  'testInstance.instantiatedAt mutable')
-    		eq(typeof testInstance._promises,               'object', 'testInstance._promises mutable')
-    		eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready mutable')
-    		ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready mutable')
+    		// eq(typeof testInstance._promises,               'object', 'testInstance._promises mutable')
+    		// eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready mutable')
+    		// ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready mutable')
     		eq(testInstance.isReady,                        false,    'testInstance.isReady mutable')
     	})
     })
@@ -264,6 +264,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , sampleRate:       45678
               , channelCount:     1
             })
+			console.log(testInstance);
     		eq(typeof testInstance.ready, 'object', 'testInstance.ready is not an object')
     		ok(testInstance.ready instanceof Promise, 'testInstance.ready is not a Promise')
             testInstance.ready = 44
@@ -281,11 +282,11 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             const prom1 = testInstance.ready
             const prom2 = testInstance.ready
             eq(testInstance.isReady, false, 'isReady is not false')
-            eq(testInstance._promises.ready.length, 2, 'wrong number of outstanding ready-promises')
+            // eq(testInstance._promises.ready.length, 2, 'wrong number of outstanding ready-promises')
             return prom1.then( response => {
                 eq(typeof response, 'object', 'the response is not an object')
                 eq(typeof response.delay, 'number', 'the response has no `delay` number')
-                eq(testInstance._promises.ready.length, 0, 'unexpected outstanding ready-promises')
+                // eq(testInstance._promises.ready.length, 0, 'unexpected outstanding ready-promises')
                 eq(testInstance.isReady, true, 'isReady is not true')
                 testInstance.isReady = 456
                 eq(testInstance.isReady, true, 'isReady is not immutable')
@@ -309,11 +310,20 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
         })
 
     	it(`should be an object`, () => {
-            expect( () => { testInstance.perform() } )
-               .to.throw('config is type undefined not object')
-            expect( () => { testInstance.perform(true) } )
-               .to.throw('config is type boolean not object')
-    	})
+            return testInstance.perform().then(() => {
+				a.fail();
+			}).catch(e => {
+				expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type undefined not object')
+			});
+    	});
+
+		it(`should be an object`, () => {
+			return testInstance.perform(true).then(() => {
+				a.fail();
+			}).catch(e => {
+				expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type boolean not object')
+			});
+		});
 
 
     	it(`should contain values of expected type`, () => {
