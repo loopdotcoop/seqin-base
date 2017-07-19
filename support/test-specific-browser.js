@@ -17,11 +17,11 @@ const
 
 describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
 
-	describe('perform() response', () => {
+    describe('perform() response', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
 
-    	it(`Promise should respond with expected buffers`, () => {
+        it(`Promise should respond with expected buffers`, () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -63,7 +63,7 @@ describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
                     // console.log(i, 'right', asmCrypto.SHA256.hex( new Uint8Array(channelDataR.buffer) ))
                 })
             })
-    	})
+        })
 
 
     })

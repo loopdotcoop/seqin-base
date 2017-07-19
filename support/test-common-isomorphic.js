@@ -31,23 +31,23 @@ const
 
 describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
-	describe('META', () => {
+    describe('META', () => {
 
         ['NAME','ID','VERSION','SPEC','HELP'].map( key => {
             const val = TestMeta[key].value
             const shortval = 60<(''+val).length ? val.substr(0,59)+'…' : ''+val
-        	it(`${ROOT.TestClassName}.${key} is "${shortval}"`, () => {
-        		eq(TestClass[key], val)
-        	})
+            it(`${ROOT.TestClassName}.${key} is "${shortval}"`, () => {
+                eq(TestClass[key], val)
+            })
         })
 
     })
 
-	describe('Instance properties (not from config)', () => {
+    describe('Instance properties (not from config)', () => {
         const ctx = {}
         const cache = {}
 
-    	it(`instance properties as expected`, () => {
+        it(`instance properties as expected`, () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -55,15 +55,22 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , sampleRate:       22050
               , channelCount:     2
             })
-    		eq(typeof testInstance.instantiatedAt,          'number', 'testInstance.instantiatedAt wrong type')
-    		// eq(typeof testInstance._promises,               'object', 'testInstance._promises wrong type')
-    		// eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready wrong type')
-    		// ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready not an array')
-    		// eq(testInstance._promises.ready.length,         0,        'testInstance._promises.ready empty')
-    		eq(testInstance.isReady,                        false,    'testInstance.isReady not false')
-    	})
 
-    	it(`instance properties should be immutable`, () => {
+            ok(Array.isArray(testInstance.validConstructor),     'testInstance.validConstructor not an array')
+            ok(Array.isArray(testInstance.validCommonPerform),   'testInstance.validCommonPerform not an array')
+            ok(Array.isArray(testInstance.validSpecificPerform), 'testInstance.validSpecificPerform not an array')
+            ok(Array.isArray(testInstance.validEvents),          'testInstance.validEvents not an array')
+
+            eq(typeof testInstance.setupStart, 'number',   'testInstance.setupStart wrong type')
+            eq(testInstance.setupEnd,           undefined, 'testInstance.setupEnd not undefined')
+
+            return testInstance.ready.then( response => {
+                eq(typeof testInstance.setupEnd, 'number', 'testInstance.setupEnd wrong type')
+                ok(testInstance.setupEnd > testInstance.setupStart, 'testInstance.setupEnd wrong value')
+            }) // no `.catch(...)`, Mocha knows how to deal with a rejected promise
+        })
+
+        it(`instance properties should be immutable`, () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -71,29 +78,38 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , sampleRate:       22050
               , channelCount:     2
             })
-            const origIAt = testInstance.instantiatedAt
-            testInstance.instantiatedAt = 123456
-            // testInstance._promises = 'oops'
-            // delete testInstance._promises.ready
-            testInstance.isReady = /foo/
-    		eq(testInstance.instantiatedAt,                 origIAt,  'testInstance.instantiatedAt mutable')
-    		// eq(typeof testInstance._promises,               'object', 'testInstance._promises mutable')
-    		// eq(typeof testInstance._promises.ready,         'object', 'testInstance._promises.ready mutable')
-    		// ok(Array.isArray(testInstance._promises.ready),           'testInstance._promises.ready mutable')
-    		eq(testInstance.isReady,                        false,    'testInstance.isReady mutable')
-    	})
+
+            testInstance.validConstructor     = 12345
+            testInstance.validCommonPerform   = 12345
+            testInstance.validSpecificPerform = 12345
+            testInstance.validEvents          = 12345
+            ok(Array.isArray(testInstance.validConstructor),     'testInstance.validConstructor not immutable')
+            ok(Array.isArray(testInstance.validCommonPerform),   'testInstance.validCommonPerform not immutable')
+            ok(Array.isArray(testInstance.validSpecificPerform), 'testInstance.validSpecificPerform not immutable')
+            ok(Array.isArray(testInstance.validEvents),          'testInstance.validEvents not immutable')
+
+            const origSetupStart = testInstance.setupStart
+            testInstance.setupStart = 12345
+            eq(testInstance.setupStart, origSetupStart, 'testInstance.setupStart not immutable')
+
+            return testInstance.ready.then( response => {
+                const origSetupEnd = testInstance.setupEnd
+                testInstance.setupEnd = /foo/
+                eq(testInstance.setupEnd, origSetupEnd, 'testInstance.setupEnd not immutable')
+            })
+        })
     })
 
-	describe('Instantiation config', () => {
+    describe('Instantiation config', () => {
 
-    	it(`should be an object`, () => {
+        it(`should be an object`, () => {
             expect( () => { new TestClass() } )
                .to.throw('config is type undefined not object')
             expect( () => { new TestClass(123) } )
                .to.throw('config is type number not object')
-    	})
+        })
 
-    	it(`should contain values of expected type`, () => {
+        it(`should contain values of expected type`, () => {
             expect( () => { new TestClass({
                 audioContext:     true
               , sharedCache:      {}
@@ -133,9 +149,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     null
             }) } )
                .to.throw('config.channelCount is type object not number')
-    	})
+        })
 
-    	it(`samplesPerBuffer should contain values within range`, () => {
+        it(`samplesPerBuffer should contain values within range`, () => {
             expect( () => { new TestClass({
                 audioContext:     {}
               , sharedCache:      {}
@@ -160,9 +176,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     1
             }) } )
                .to.throw('config.samplesPerBuffer leaves a remainder when divided by 1')
-    	})
+        })
 
-    	it(`sampleRate should contain values within range`, () => {
+        it(`sampleRate should contain values within range`, () => {
             expect( () => { new TestClass({
                 audioContext:     {}
               , sharedCache:      {}
@@ -187,9 +203,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     1
             }) } )
                .to.throw('config.sampleRate leaves a remainder when divided by 1')
-    	})
+        })
 
-    	it(`channelCount should contain values within range`, () => {
+        it(`channelCount should contain values within range`, () => {
             expect( () => { new TestClass({
                 audioContext:     {}
               , sharedCache:      {}
@@ -214,7 +230,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     15.0001
             }) } )
                .to.throw('config.channelCount leaves a remainder when divided by 1')
-    	})
+        })
 
         {
             const ctx = {}
@@ -227,36 +243,36 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     2
             })
 
-        	it(`should create instance properties`, () => {
-        		eq(testInstance.audioContext,     ctx,   'testInstance.audioContext fail')
-        		eq(testInstance.sharedCache,      cache, 'testInstance.sharedCache fail')
-        		eq(testInstance.samplesPerBuffer, 123,   'testInstance.samplesPerBuffer fail')
-        		eq(testInstance.sampleRate,       22050, 'testInstance.sampleRate fail')
-        		eq(testInstance.channelCount,     2,     'testInstance.channelCount fail')
-        	})
+            it(`should create instance properties`, () => {
+                eq(testInstance.audioContext,     ctx,   'testInstance.audioContext fail')
+                eq(testInstance.sharedCache,      cache, 'testInstance.sharedCache fail')
+                eq(testInstance.samplesPerBuffer, 123,   'testInstance.samplesPerBuffer fail')
+                eq(testInstance.sampleRate,       22050, 'testInstance.sampleRate fail')
+                eq(testInstance.channelCount,     2,     'testInstance.channelCount fail')
+            })
 
-        	it(`instance properties should be immutable`, () => {
+            it(`instance properties should be immutable`, () => {
                 testInstance.audioContext = {a:1}
                 testInstance.sharedCache = {b:2}
                 testInstance.samplesPerBuffer = 77
                 testInstance.sampleRate = 88
                 testInstance.channelCount = 1
-        		eq(testInstance.audioContext,     ctx,   'testInstance.audioContext fail')
-        		eq(testInstance.sharedCache,      cache, 'testInstance.sharedCache fail')
-        		eq(testInstance.samplesPerBuffer, 123,   'testInstance.samplesPerBuffer fail')
-        		eq(testInstance.sampleRate,       22050, 'testInstance.sampleRate fail')
-        		eq(testInstance.channelCount,     2,     'testInstance.channelCount fail')
-        	})
+                eq(testInstance.audioContext,     ctx,   'testInstance.audioContext fail')
+                eq(testInstance.sharedCache,      cache, 'testInstance.sharedCache fail')
+                eq(testInstance.samplesPerBuffer, 123,   'testInstance.samplesPerBuffer fail')
+                eq(testInstance.sampleRate,       22050, 'testInstance.sampleRate fail')
+                eq(testInstance.channelCount,     2,     'testInstance.channelCount fail')
+            })
         }
 
     })
 
 
-	describe('The `ready` property', () => {
+    describe('The `ready` property', () => {
         const ctx = {}
         const cache = {}
 
-    	it(`should be an immutable Promise`, () => {
+        it(`should be an immutable Promise`, () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -264,12 +280,11 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , sampleRate:       45678
               , channelCount:     1
             })
-			console.log(testInstance);
-    		eq(typeof testInstance.ready, 'object', 'testInstance.ready is not an object')
-    		ok(testInstance.ready instanceof Promise, 'testInstance.ready is not a Promise')
+            eq(typeof testInstance.ready, 'object', 'testInstance.ready is not an object')
+            ok(testInstance.ready instanceof Promise, 'testInstance.ready is not a Promise')
             testInstance.ready = 44
-    		eq(typeof testInstance.ready, 'object', 'testInstance.ready is not immutable')
-    	})
+            eq(typeof testInstance.ready, 'object', 'testInstance.ready is not immutable')
+        })
 
         it('Should resolve to an object', () => {
             const testInstance = new TestClass({
@@ -279,26 +294,24 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , sampleRate:       45678
               , channelCount:     1
             })
-            const prom1 = testInstance.ready
-            const prom2 = testInstance.ready
-            eq(testInstance.isReady, false, 'isReady is not false')
-            // eq(testInstance._promises.ready.length, 2, 'wrong number of outstanding ready-promises')
-            return prom1.then( response => {
+            const readyPromise = testInstance.ready
+            eq(typeof testInstance.setupStart, 'number', 'setupStart is not a number')
+            eq(testInstance.setupEnd, undefined, 'setupEnd is not undefined')
+            return readyPromise.then( response => {
                 eq(typeof response, 'object', 'the response is not an object')
-                eq(typeof response.delay, 'number', 'the response has no `delay` number')
-                // eq(testInstance._promises.ready.length, 0, 'unexpected outstanding ready-promises')
-                eq(testInstance.isReady, true, 'isReady is not true')
-                testInstance.isReady = 456
-                eq(testInstance.isReady, true, 'isReady is not immutable')
+                eq(typeof testInstance.setupEnd, 'number', 'setupEnd is not a number')
+                eq(typeof response.setupDelay, 'number', 'the response has no `setupDelay` number')
+                eq(testInstance.setupEnd - testInstance.setupStart, response.setupDelay, 'setupDelay is wrong value')
                 return testInstance.ready.then( response => {
-                    eq(typeof response.delay, 'number', 'new Promises not fulfilled after isReady becomes true')
+                    eq(typeof response.setupDelay, 'number', 'new Promise not fulfilled after setupEnd becomes a number')
+                    eq(testInstance.setupEnd - testInstance.setupStart, response.setupDelay, 'setupStart, setupEnd and/or setupDelay has changed')
                 })
-            }) // no `.catch(...)`, Mocha knows how to deal with a rejected promise
+            })
         })
 
     })
 
-	describe('perform() config', () => {
+    describe('perform() config', () => {
         const ctx = {}
         const cache = {}
         const testInstance = new TestClass({
@@ -309,24 +322,24 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
           , channelCount:     1
         })
 
-    	it(`should be an object`, () => {
-            return testInstance.perform().then(() => {
-				a.fail();
-			}).catch(e => {
-				expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type undefined not object')
-			});
-    	});
+        it(`should be an object`, () => {
+            expect( () => { testInstance.perform() } )
+               .to.throw('config is type undefined not object')
+            expect( () => { testInstance.perform(true) } )
+               .to.throw('config is type boolean not object')
+        })
 
-		it(`should be an object`, () => {
-			return testInstance.perform(true).then(() => {
-				a.fail();
-			}).catch(e => {
-				expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type boolean not object')
-			});
-		});
+        //@TODO use this style for Promise errors
+        //
+        // it(`should be an object`, () => {
+        //     return testInstance.perform().then( () => {
+        //         a.fail('Some message here')
+        //     }).catch( e => {
+        //         expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type undefined not object')
+        //     })
+        // })
 
-
-    	it(`should contain values of expected type`, () => {
+        it(`should contain values of expected type`, () => {
             expect( () => { testInstance.perform({
                 bufferCount:     false
               , cyclesPerBuffer: 123
@@ -355,9 +368,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events:          ''
             }) } )
                .to.throw('config.events is type string not object')
-    	})
+        })
 
-    	it(`bufferCount should contain values within range`, () => {
+        it(`bufferCount should contain values within range`, () => {
             expect( () => { testInstance.perform({
                 bufferCount:     0
               , cyclesPerBuffer: 123
@@ -379,9 +392,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events:          []
             }) } )
                .to.throw('config.bufferCount 123.4 leaves remainder 0.4000000000000057 when divided by 1')
-    	})
+        })
 
-    	it(`cyclesPerBuffer should contain values within range`, () => {
+        it(`cyclesPerBuffer should contain values within range`, () => {
             expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 0
@@ -403,9 +416,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events:          []
             }) } )
                .to.throw('config.cyclesPerBuffer 123.4 leaves remainder 0.4000000000000057 when divided by 1')
-    	})
+        })
 
-    	it(`samplesPerBuffer/cyclesPerBuffer must be an integer`, () => {
+        it(`samplesPerBuffer/cyclesPerBuffer must be an integer`, () => {
             expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 124
@@ -413,10 +426,10 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events:          []
             }) } )
                .to.throw('samplesPerBuffer/cyclesPerBuffer is not an integer')
-    	})
+        })
 
 
-    	it(`config.events should be an array`, () => {
+        it(`config.events should be an array`, () => {
             expect( () => { testInstance.perform({
                 bufferCount:     8
               , cyclesPerBuffer: 123
@@ -424,10 +437,10 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events:          {}
             }) } )
                .to.throw('config.events is not an array')
-    	})
+        })
 
 
-    	it(`config.events should only contain valid 'event' objects`, () => {
+        it(`config.events should only contain valid 'event' objects`, () => {
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,down:9}, {at:456,down:0}, 'whoops!', {at:789,down:0} ]
@@ -493,7 +506,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
            //@TODO valid event objects
 
-    	})
+        })
 
     })
 

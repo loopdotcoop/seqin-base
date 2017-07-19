@@ -20,7 +20,7 @@ const
 describe(`Test common browser '${ROOT.TestClassName}'`, () => {
 
 
-	describe('perform()', () => {
+    describe('perform()', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
         const testInstance = new TestClass({
@@ -31,26 +31,26 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
           , channelCount:     1
         })
 
-    	it(`should be a method which returns a Promise`, () => {
+        it(`should be a method which returns a Promise`, () => {
             const testConfig = {
                 bufferCount:     8
               , cyclesPerBuffer: 123
               , isLooping:       true
               , events:          []
             }
-    		eq(typeof testInstance.perform, 'function', 'testInstance.perform is not a function')
-    		ok(typeof testInstance.perform(testConfig), 'object', 'testInstance.perform does not return an object')
-    		ok(testInstance.perform(testConfig) instanceof Promise, 'testInstance.perform does not return a Promise')
-    	})
+            eq(typeof testInstance.perform, 'function', 'testInstance.perform is not a function')
+            ok(typeof testInstance.perform(testConfig), 'object', 'testInstance.perform does not return an object')
+            ok(testInstance.perform(testConfig) instanceof Promise, 'testInstance.perform does not return a Promise')
+        })
     })
 
 
 
-	describe('Promise returned by perform()', () => {
+    describe('Promise returned by perform()', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
         const cache = {}
 
-    	it(`should return a Promise`, () => {
+        it(`should return a Promise`, () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -64,12 +64,12 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , isLooping:       true
               , events:          []
             })
-    		eq( typeof bufferProm, 'object', 'not an object' )
-    		ok( bufferProm instanceof Promise, 'not a Promise' )
-    	})
+            eq( typeof bufferProm, 'object', 'not an object' )
+            ok( bufferProm instanceof Promise, 'not a Promise' )
+        })
 
 
-        it('Should resolve to an array of buffers (before isReady)', () => {
+        it('Should resolve to an array of buffers (called before setup complete)', () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -83,10 +83,10 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , isLooping:       true
               , events:          []
             })
-            eq(testInstance.isReady, false, 'isReady is not false')
+            eq(testInstance.setupEnd, undefined, 'setupEnd is not undefined')
             return bufferProm.then( response => {
                 ok( Array.isArray(response), 'the response is not an array')
-        		eq( response.length, 8, 'wrong response.length' )
+                eq( response.length, 8, 'wrong response.length' )
                 response.forEach( (buffer,i) => {
                     ok( buffer.data instanceof ROOT.AudioBuffer, `buffers[${i}].data is not an AudioBuffer` )
                     eq( Math.floor(1e6 * buffer.data.duration), 100000, `buffers[${i}].duration is incorrect` )
@@ -98,7 +98,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
         })
 
 
-        it('Should resolve to an array of buffers (after isReady)', () => {
+        it('Should resolve to an array of buffers (called after setup complete)', () => {
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -107,9 +107,9 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
               , channelCount:     2 // stereo
             })
             const readyProm = testInstance.ready
-            eq(testInstance.isReady, false, 'isReady is not false')
+            eq(testInstance.setupEnd, undefined, 'setupEnd is not undefined')
             return readyProm.then( response => {
-                eq(testInstance.isReady, true, 'isReady is not true')
+                eq(typeof testInstance.setupEnd, 'number', 'setupEnd is not a number')
                 const bufferProm = testInstance.perform({
                     bufferCount:     4
                   , cyclesPerBuffer: 234
@@ -118,7 +118,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
                 })
                 return bufferProm.then( response => {
                     ok( Array.isArray(response), 'the response is not an array')
-            		eq( response.length, 4, 'wrong response.length' )
+                    eq( response.length, 4, 'wrong response.length' )
                     response.forEach( (buffer,i) => {
                         ok( buffer.data instanceof ROOT.AudioBuffer, `buffers[${i}].data is not an AudioBuffer` )
                         eq( Math.floor(1e6 * buffer.data.duration), 100000, `buffers[${i}].duration is incorrect` )
