@@ -3,7 +3,7 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'base'     }
-  , VERSION: { value:'1.0.0'    }
+  , VERSION: { value:'1.0.1'    }
   , SPEC:    { value:'20170728' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -

@@ -19,7 +19,7 @@ Built by Rich Plastow and Monty Anderson for Loop.Coop.
 App
 ---
 + __Last update:__  2017/07/28
-+ __Version:__      1.0.0
++ __Version:__      1.0.1
 
 
 Tested
@@ -48,3 +48,4 @@ Changelog
 + 0.0.13      Better use of Promises
 + 0.0.14      Verbose self-description of constructor() and perform() configs
 + 1.0.0       Move to github.com/loopdotcoop/seqin-base
++ 1.0.1       Bumped for NPM
