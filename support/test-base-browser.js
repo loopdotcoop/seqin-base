@@ -1,4 +1,4 @@
-//// 'common', because these tests can be run unmodified by all subclasses, eg
+//// 'base', because these tests can be run unmodified by all subclasses, eg
 //// MathSeqin just replaces `TestClass = Seqin` with `TestClass = MathSeqin`.
 
 //// 'browser', because these tests need a fully functional AudioContext. That
@@ -17,7 +17,7 @@ const
   , TestClass = SEQIN[ROOT.TestClassName]
 
 
-describe(`Test common browser '${ROOT.TestClassName}'`, () => {
+describe(`Test base browser '${ROOT.TestClassName}'`, () => {
 
 
     describe('perform()', () => {
@@ -42,6 +42,17 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
             ok(typeof testInstance.perform(testConfig), 'object', 'testInstance.perform does not return an object')
             ok(testInstance.perform(testConfig) instanceof Promise, 'testInstance.perform does not return a Promise')
         })
+
+        it(`should fill in missing config properties with defaults`, () => {
+            const testConfig = {}
+            testInstance.perform(testConfig)
+            eq(testConfig.bufferCount,     1,     'testConfig.bufferCount fail')
+            eq(testConfig.cyclesPerBuffer, 1,     'testConfig.cyclesPerBuffer fail')
+            eq(testConfig.isLooping,       false, 'testConfig.bufferCount fail')
+            ok(Array.isArray(testConfig.events),  'testConfig.events fail')
+            eq(testConfig.events.length,   0,     'testConfig.events fail')
+        })
+
     })
 
 
@@ -62,7 +73,7 @@ describe(`Test common browser '${ROOT.TestClassName}'`, () => {
                 bufferCount:     8
               , cyclesPerBuffer: 234
               , isLooping:       true
-              , events:          []
+              , events:          [ {at:123,down:5,gain:0}, {at:456,down:0} ] // first event has two actions - that is allowed
             })
             eq( typeof bufferProm, 'object', 'not an object' )
             ok( bufferProm instanceof Promise, 'not a Promise' )

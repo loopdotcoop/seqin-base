@@ -1,4 +1,4 @@
-//// 'common', because these tests can be run unmodified by all subclasses, eg
+//// 'base', because these tests can be run unmodified by all subclasses, eg
 //// MathSeqin just replaces `TestClass = Seqin` with `TestClass = MathSeqin`.
 
 //// 'isomorphic', because these tests will run in the browser or in Node.js.
@@ -11,6 +11,8 @@ const
   , expect    = isBrowser ? chai.expect : require('chai').expect
   , eq        = a.strictEqual
   , ok        = a.isOk
+  , ctx       = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
+  , cache     = {}
 
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
     //// window.TestClassName = 'MyGreatSeqin' // browser
@@ -29,7 +31,7 @@ const
   , TestMeta = ROOT.TestMeta
 
 
-describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
+describe(`Test base isomorphic '${ROOT.TestClassName}'`, () => {
 
     describe('META', () => {
 
@@ -44,8 +46,6 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     })
 
     describe('Instance properties (not from config)', () => {
-        const ctx = {}
-        const cache = {}
 
         it(`instance properties as expected`, () => {
             const testInstance = new TestClass({
@@ -56,10 +56,11 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     2
             })
 
-            ok(Array.isArray(testInstance.validConstructor),     'testInstance.validConstructor not an array')
-            ok(Array.isArray(testInstance.validCommonPerform),   'testInstance.validCommonPerform not an array')
-            ok(Array.isArray(testInstance.validSpecificPerform), 'testInstance.validSpecificPerform not an array')
-            ok(Array.isArray(testInstance.validEvents),          'testInstance.validEvents not an array')
+            ok(Array.isArray(testInstance.validBaseConstructor),    'testInstance.validBaseConstructor not an array')
+            ok(Array.isArray(testInstance.validSpecificConstructor),'testInstance.validSpecificConstructor not an array')
+            ok(Array.isArray(testInstance.validBasePerform),        'testInstance.validBasePerform not an array')
+            ok(Array.isArray(testInstance.validSpecificPerform),    'testInstance.validSpecificPerform not an array')
+            ok(Array.isArray(testInstance.validBaseEvents),         'testInstance.validBaseEvents not an array')
 
             eq(typeof testInstance.setupStart, 'number',   'testInstance.setupStart wrong type')
             eq(testInstance.setupEnd,           undefined, 'testInstance.setupEnd not undefined')
@@ -79,14 +80,16 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , channelCount:     2
             })
 
-            testInstance.validConstructor     = 12345
-            testInstance.validCommonPerform   = 12345
-            testInstance.validSpecificPerform = 12345
-            testInstance.validEvents          = 12345
-            ok(Array.isArray(testInstance.validConstructor),     'testInstance.validConstructor not immutable')
-            ok(Array.isArray(testInstance.validCommonPerform),   'testInstance.validCommonPerform not immutable')
-            ok(Array.isArray(testInstance.validSpecificPerform), 'testInstance.validSpecificPerform not immutable')
-            ok(Array.isArray(testInstance.validEvents),          'testInstance.validEvents not immutable')
+            testInstance.validBaseConstructor     = 12345
+            testInstance.validSpecificConstructor = 12345
+            testInstance.validBasePerform         = 12345
+            testInstance.validSpecificPerform     = 12345
+            testInstance.validBaseEvents          = 12345
+            ok(Array.isArray(testInstance.validBaseConstructor),    'testInstance.validBaseConstructor not immutable')
+            ok(Array.isArray(testInstance.validSpecificConstructor),'testInstance.validSpecificConstructor not immutable')
+            ok(Array.isArray(testInstance.validBasePerform),        'testInstance.validBasePerform not immutable')
+            ok(Array.isArray(testInstance.validSpecificPerform),    'testInstance.validSpecificPerform not immutable')
+            ok(Array.isArray(testInstance.validBaseEvents),         'testInstance.validBaseEvents not immutable')
 
             const origSetupStart = testInstance.setupStart
             testInstance.setupStart = 12345
@@ -111,15 +114,22 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
         it(`should contain values of expected type`, () => {
             expect( () => { new TestClass({
-                audioContext:     true
+                audioContext:     {}
               , sharedCache:      {}
               , samplesPerBuffer: 123
               , sampleRate:       22050
               , channelCount:     1
             }) } )
-               .to.throw('config.audioContext is type boolean not object')
+               .to.throw('config.audioContext is not an instance of AudioContext')
             expect( () => { new TestClass({
-                audioContext:     {}
+                sharedCache:      {}
+              , samplesPerBuffer: 123
+              , sampleRate:       22050
+              , channelCount:     1
+            }) } )
+               .to.throw('Mandatory config.audioContext is missing')
+            expect( () => { new TestClass({
+                audioContext:     ctx
               , sharedCache:      'abc'
               , samplesPerBuffer: 123
               , sampleRate:       22050
@@ -127,14 +137,22 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.sharedCache is type string not object')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
+              , samplesPerBuffer: 123
+              , sampleRate:       22050
+              , channelCount:     1
+            }) } )
+               .to.throw('Mandatory config.sharedCache is missing')
+            expect( () => { new TestClass({
+                audioContext:     ctx
               , sharedCache:      {}
+              , samplesPerBuffer: undefined // Seqin won’t use the default 5400, because `config.hasOwnProperty('samplesPerBuffer')` is true here
               , sampleRate:       22050
               , channelCount:     1
             }) } )
                .to.throw('config.samplesPerBuffer is type undefined not number')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 123
               , sampleRate:       null
@@ -142,7 +160,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.sampleRate is type object not number')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 123
               , sampleRate:       22050
@@ -153,7 +171,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
 
         it(`samplesPerBuffer should contain values within range`, () => {
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: -7
               , sampleRate:       22050
@@ -161,7 +179,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.samplesPerBuffer is less than the minimum 8')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 96001
               , sampleRate:       22050
@@ -169,18 +187,18 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.samplesPerBuffer is greater than the maximum 96000')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 12345.6
               , sampleRate:       22050
               , channelCount:     1
             }) } )
-               .to.throw('config.samplesPerBuffer leaves a remainder when divided by 1')
+               .to.throw('config.samplesPerBuffer 12345.6 leaves remainder 0.6000000000003638 when divided by 1')
         })
 
         it(`sampleRate should contain values within range`, () => {
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       22049
@@ -188,7 +206,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.sampleRate is less than the minimum 22050')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       96001
@@ -196,18 +214,18 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.sampleRate is greater than the maximum 96000')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       22050.5
               , channelCount:     1
             }) } )
-               .to.throw('config.sampleRate leaves a remainder when divided by 1')
+               .to.throw('config.sampleRate 22050.5 leaves remainder 0.5 when divided by 1')
         })
 
         it(`channelCount should contain values within range`, () => {
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       22050
@@ -215,7 +233,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.channelCount is less than the minimum 1')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       96000
@@ -223,18 +241,16 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             }) } )
                .to.throw('config.channelCount is greater than the maximum 32')
             expect( () => { new TestClass({
-                audioContext:     {}
+                audioContext:     ctx
               , sharedCache:      {}
               , samplesPerBuffer: 8
               , sampleRate:       96000
               , channelCount:     15.0001
             }) } )
-               .to.throw('config.channelCount leaves a remainder when divided by 1')
+               .to.throw('config.channelCount 15.0001 leaves remainder 0.00009999999999976694 when divided by 1')
         })
 
         {
-            const ctx = {}
-            const cache = {}
             const testInstance = new TestClass({
                 audioContext:     ctx
               , sharedCache:      cache
@@ -265,12 +281,40 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
             })
         }
 
+        {
+            const testConfig = {
+                audioContext:     ctx
+              , sharedCache:      cache
+            }
+            const testInstance = new TestClass(testConfig)
+
+            it(`default instance properties should be as expected`, () => {
+                eq(testInstance.samplesPerBuffer, 5400,           'testInstance.samplesPerBuffer fail')
+                eq(testInstance.sampleRate,       ctx.sampleRate, 'testInstance.sampleRate fail')
+                eq(testInstance.channelCount,     1,              'testInstance.channelCount fail')
+            })
+
+            it(`default instance properties should be immutable`, () => {
+                testInstance.samplesPerBuffer = 77
+                testInstance.sampleRate = 88
+                testInstance.channelCount = 1
+                eq(testInstance.samplesPerBuffer, 5400,           'testInstance.samplesPerBuffer fail')
+                eq(testInstance.sampleRate,       ctx.sampleRate, 'testInstance.sampleRate fail')
+                eq(testInstance.channelCount,     1,              'testInstance.channelCount fail')
+            })
+
+            it(`default properties should be added to the config object`, () => {
+                eq(testConfig.samplesPerBuffer, 5400,           'testConfig.samplesPerBuffer fail')
+                eq(testConfig.sampleRate,       ctx.sampleRate, 'testConfig.sampleRate fail')
+                eq(testConfig.channelCount,     1,              'testConfig.channelCount fail')
+            })
+
+        }
+
     })
 
 
     describe('The `ready` property', () => {
-        const ctx = {}
-        const cache = {}
 
         it(`should be an immutable Promise`, () => {
             const testInstance = new TestClass({
@@ -312,8 +356,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
     })
 
     describe('perform() config', () => {
-        const ctx = {}
-        const cache = {}
+
         const testInstance = new TestClass({
             audioContext:     ctx
           , sharedCache:      cache
@@ -335,7 +378,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
         //     return testInstance.perform().then( () => {
         //         a.fail('Some message here')
         //     }).catch( e => {
-        //         expect(e.message).to.equal('Seqin:_validCommonPerfom(): config is type undefined not object')
+        //         expect(e.message).to.equal('Seqin:_validBasePerform(): config is type undefined not object')
         //     })
         // })
 
@@ -365,9 +408,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
                 bufferCount:     8
               , cyclesPerBuffer: 123
               , isLooping:       true
-              , events:          ''
+              , events:          {}
             }) } )
-               .to.throw('config.events is type string not object')
+               .to.throw('config.events is not an instance of Array')
         })
 
         it(`bufferCount should contain values within range`, () => {
@@ -436,7 +479,7 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , isLooping:       true
               , events:          {}
             }) } )
-               .to.throw('config.events is not an array')
+               .to.throw('config.events is not an instance of Array')
         })
 
 
@@ -448,19 +491,19 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
                .to.throw('config.events[2] is not an object')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:5}, {} ]
+              , events: [ {at:123,down:5}, {down:0} ]
             }) } )
-               .to.throw('config.events[1].at is not a number')
+               .to.throw('config.events[1].at is not set')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:5}, {at:-123.456} ]
+              , events: [ {at:123,down:5}, {at:123.5,down:0} ]
             }) } )
-               .to.throw('config.events[1] does not specify an action')
+               .to.throw('config.events[1].at 123.5 leaves remainder 0.5 when divided by 1')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,down:5,gain:0} ]
+              , events: [ {at:123,down:5}, {at:456} ]
             }) } )
-               .to.throw('config.events[0] has more than one action')
+               .to.throw('config.events[1] does not specify any actions')
 
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
@@ -490,9 +533,9 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
                .to.throw('config.events[0].gain is type string not number')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
-              , events: [ {at:123,gain:10} ]
+              , events: [ {at:123,gain:9} ]
             }) } )
-               .to.throw('config.events[0].gain is greater than the maximum 9')
+               .to.throw('config.events[0].gain is greater than the maximum 8')
             expect( () => { testInstance.perform({
                 bufferCount: 8, cyclesPerBuffer: 123, isLooping: true
               , events: [ {at:123,gain:-1} ]
@@ -503,9 +546,6 @@ describe(`Test common isomorphic '${ROOT.TestClassName}'`, () => {
               , events: [ {at:123,gain:0.41} ]
             }) } )
                .to.throw('config.events[0].gain 0.41 leaves remainder 0.41 when divided by 1')
-
-           //@TODO valid event objects
-
         })
 
     })
