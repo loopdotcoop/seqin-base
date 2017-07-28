@@ -9,17 +9,17 @@ Authors
 -------
 Built by Rich Plastow and Monty Anderson for Loop.Coop.
 
-+ __Homepage:__     [loopdotcoop.github.io/seqin-si/](https://loopdotcoop.github.io/seqin-si/)
-+ __GitHub:__       [loopdotcoop/seqin](https://github.com/loopdotcoop/seqin-si)
-+ __NPM:__          [seqin-si](https://www.npmjs.com/package/seqin-si)
++ __Homepage:__     [loopdotcoop.github.io/seqin-base/](https://loopdotcoop.github.io/seqin-base/)
++ __GitHub:__       [loopdotcoop/seqin](https://github.com/loopdotcoop/seqin-base)
++ __NPM:__          [seqin-base](https://www.npmjs.com/package/seqin-base)
 + __Twitter:__      [@loopdotcoop](https://twitter.com/loopdotcoop)
 + __Location:__     Brighton, UK
 
 
 App
 ---
-+ __Last update:__  2017/07/19
-+ __Version:__      0.0.14
++ __Last update:__  2017/07/28
++ __Version:__      1.0.0
 
 
 Tested
@@ -39,7 +39,7 @@ Changelog
 + 0.0.4       getBuffers() complete
 + 0.0.5       Stricter config validation; tests are ‘common’ or ‘specific’
 + 0.0.6       Correct hash-test in support/test-specific-browser.js
-+ 0.0.7       Move to github.com/loopdotcoop/seqin-si
++ 0.0.7       Move to github.com/loopdotcoop/seqin-base
 + 0.0.8       ‘ready’ property and getBuffers() return Promises
 + 0.0.9       Rename getBuffers() to perform()
 + 0.0.10      perform() defers validation to private methods
@@ -47,3 +47,4 @@ Changelog
 + 0.0.12      ‘down’ and ‘gain’ events expect a number between 0 and 9
 + 0.0.13      Better use of Promises
 + 0.0.14      Verbose self-description of constructor() and perform() configs
++ 1.0.0       Move to github.com/loopdotcoop/seqin-base

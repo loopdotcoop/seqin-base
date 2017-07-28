@@ -1,8 +1,8 @@
 {
-  "name": "seqin-si",
-  "version": "0.0.14",
+  "name": "seqin-base",
+  "version": "1.0.0",
   "description": "The base class for all sequencer instruments",
-  "main": "Seqin.js",
+  "main": "seqin-base.js",
   "directories": {
     "example": "support"
   },
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/loopdotcoop/seqin-si.git"
+    "url": "git+https://github.com/loopdotcoop/seqin-base.git"
   },
   "keywords": [
     "seqin",
@@ -31,7 +31,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/loopdotcoop/seqin-si/issues"
+    "url": "https://github.com/loopdotcoop/seqin-base/issues"
   },
-  "homepage": "https://loopdotcoop.github.io/seqin-si/"
+  "homepage": "https://loopdotcoop.github.io/seqin-base/"
 }

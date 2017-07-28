@@ -11,24 +11,21 @@ const
   , expect    = isBrowser ? chai.expect : require('chai').expect
   , eq        = a.strictEqual
   , ok        = a.isOk
-  , ctx       = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
-  , cache     = {}
-
-    //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
-    //// window.TestClassName = 'MyGreatSeqin' // browser
-    //// ...or...
-    //// global.TestClassName = 'MyGreatSeqin' // Node.js
-  , TestClass = SEQIN[ROOT.TestClassName]
 
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
     //// window.TestMeta = { // replace `window` with `global` for Node.js
     ////     NAME:    { value:'MyGreatSeqin' }
     ////   , ID:      { value:'mygt'       }
     ////   , VERSION: { value:'1.2.3'    }
-    ////   , SPEC:    { value:'20170705' }
+    ////   , SPEC:    { value:'20170728' }
     ////   , HELP:    { value: 'This is literally the best Seqin ever made!' }
     //// }
   , TestMeta = ROOT.TestMeta
+  , TestClassName = TestMeta.NAME.value
+  , TestClass = SEQIN[TestClassName]
+
+  , ctx       = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
+  , cache     = {}
 
 
 describe(`Test base isomorphic '${ROOT.TestClassName}'`, () => {

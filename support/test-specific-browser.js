@@ -9,10 +9,19 @@ const
     a         = chai.assert
   , expect    = chai.expect
   , eq        = a.strictEqual
+  , ok        = a.isOk
 
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
-    //// window.TestClassName = 'MyGreatSeqin'
-  , TestClass = SEQIN[ROOT.TestClassName]
+    //// window.TestMeta = { // replace `window` with `global` for Node.js
+    ////     NAME:    { value:'MyGreatSeqin' }
+    ////   , ID:      { value:'mygt'       }
+    ////   , VERSION: { value:'1.2.3'    }
+    ////   , SPEC:    { value:'20170728' }
+    ////   , HELP:    { value: 'This is literally the best Seqin ever made!' }
+    //// }
+  , TestMeta = ROOT.TestMeta
+  , TestClassName = TestMeta.NAME.value
+  , TestClass = SEQIN[TestClassName]
 
 
 describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
@@ -36,7 +45,7 @@ describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
               , events:          []
             }).then( buffers => {
                 buffers.forEach( (buffer,i) => {
-                    eq( buffer.id, 'si', `buffers[${i}].id is incorrect` )
+                    eq( buffer.id, undefined, `buffers[${i}].id should not exist` )
                     const channelDataL = buffer.data.getChannelData(0)
                     const channelDataR = buffer.data.getChannelData(1)
                     // if (0 == i) {

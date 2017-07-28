@@ -32,7 +32,7 @@ removeChild(this)},d.body.appendChild(p)):alert(h)}}('position:fixed!importa'+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/asmCrypto/0.0.11/asmcrypto.js"></script>
 
 <!-- Seqin -->
-<script src="../Seqin.js"></script>
+<script src="../seqin-base.js"></script>
 
 <style type="text/css">
 body {
@@ -53,19 +53,18 @@ body {
 </head>
 <body>
 
-<h1><a href="../index.html">Seqin 0.0.14</a></h1>
+<h1><a href="../index.html">Seqin 1.0.0</a></h1>
 
 <div id="mocha"></div>
 
 <script>
 mocha.setup('bdd')
-window.TestClassName = 'Seqin'
+//// Define `TestMeta` - this has been copied from the main script.
 window.TestMeta = {
-//// This has been copy-pasted from the main script:
     NAME:    { value:'Seqin'    }
-  , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.14'    }
-  , SPEC:    { value:'20170705' }
+  , ID:      { value:'base'     }
+  , VERSION: { value:'1.0.0'    }
+  , SPEC:    { value:'20170728' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
 it just generates silent buffers.` }

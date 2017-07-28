@@ -2,72 +2,71 @@
 
 const META = {
     NAME:    { value:'Seqin'    }
-  , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.14'    }
-  , SPEC:    { value:'20170705' }
+  , ID:      { value:'base'     }
+  , VERSION: { value:'1.0.0'    }
+  , SPEC:    { value:'20170728' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
 it just generates silent buffers.` }
 }
 
+
+//// METHODS
+//// -------
+
+//// INSTANTIATE
+//// constructor()
+//// _getReady()
+
+//// PERFORM
+//// perform()
+//// _buildBuffers()
+
+//// VALID CONSTRUCTOR CONFIG
+//// validBaseConstructor()
+//// validFamilyConstructor()
+//// validSpecificConstructor()
+
+//// VALID PERFORM CONFIG
+//// validBasePerform()
+//// validFamilyPerform()
+//// validSpecificPerform()
+
+//// VALID PERFORM EVENTS
+//// validBaseEvents()
+//// validFamilyEvents()
+//// validSpecificEvents()
+
+//// VALIDATE CONSTRUCTOR CONFIG
+//// _validateBaseConstructor
+//// _validateFamilyConstructor
+//// _validateSpecificConstructor
+
+//// VALIDATE PERFORM CONFIG
+//// _validateBasePerform
+//// _validateFamilyPerform
+//// _validateSpecificPerform
+
+//// VALIDATE PERFORM EVENTS
+//// _validateBaseEvents
+//// _validateFamilyEvents
+//// _validateSpecificEvents
+
+
+//// UTILITY
+//// -------
+
+//// applyDefault()
+//// validateType()
+//// validateRange()
+
+
+
+
 //// Make available on the window (browser) or global (Node.js).
 const SEQIN = ROOT.SEQIN = ROOT.SEQIN || {}
 
-
-SEQIN.Seqin = class {
-
-
-    //// METHODS
-    //// -------
-
-    //// INSTANTIATE
-    //// constructor()
-    //// _getReady()
-
-    //// PERFORM
-    //// perform()
-    //// _buildBuffers()
-
-    //// VALID CONSTRUCTOR CONFIG
-    //// validBaseConstructor()
-    //// validFamilyConstructor()
-    //// validSpecificConstructor()
-
-    //// VALID PERFORM CONFIG
-    //// validBasePerform()
-    //// validFamilyPerform()
-    //// validSpecificPerform()
-
-    //// VALID PERFORM EVENTS
-    //// validBaseEvents()
-    //// validFamilyEvents()
-    //// validSpecificEvents()
-
-    //// VALIDATE CONSTRUCTOR CONFIG
-    //// _validateBaseConstructor
-    //// _validateFamilyConstructor
-    //// _validateSpecificConstructor
-
-    //// VALIDATE PERFORM CONFIG
-    //// _validateBasePerform
-    //// _validateFamilyPerform
-    //// _validateSpecificPerform
-
-    //// VALIDATE PERFORM EVENTS
-    //// _validateBaseEvents
-    //// _validateFamilyEvents
-    //// _validateSpecificEvents
-
-
-    //// UTILITY
-    //// -------
-
-    //// applyDefault()
-    //// validateType()
-    //// validateRange()
-
-
-
+SEQIN.Seqin = class Seqin {
 
     //// INSTANTIATE
 
@@ -124,7 +123,7 @@ SEQIN.Seqin = class {
         if (this.setupStart) throw new Error(`Seqin:_getReady(): Can only run once`)
         Object.defineProperty(this, 'setupStart', { value:performance.now() })
 
-        //// seqin-si does no setup, so could resolve the `ready` Promise
+        //// seqin-base does no setup, so could resolve the `ready` Promise
         //// immediately. However, to make _getReady()’s behavior consistent with
         //// Seqins which have a slow async setup, we introduce a short delay.
         return new Promise( (resolve, reject) => { setTimeout(
@@ -187,12 +186,12 @@ SEQIN.Seqin = class {
     //// Called by: perform()
     _buildBuffers(config) {
 
-        //// The base Seqin class just returns silence.
+        //// The base Seqin class just returns silence. Note that a silent
+        //// buffer created by the base Seqin class has no ID.
         const buffers = []
         for (let i=0; i<config.bufferCount; i++) {
             buffers.push({
-                id:   'si' // always silence, so always the same cache-identifier
-              , data: this.audioContext.createBuffer( //@TODO start using sharedCache
+                data: this.audioContext.createBuffer( //@TODO start using sharedCache
                     this.channelCount     // numOfChannels
                   , this.samplesPerBuffer // length
                   , this.sampleRate       // sampleRate

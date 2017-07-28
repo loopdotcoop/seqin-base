@@ -1,14 +1,12 @@
 //// This is the test entry-point for Node.js.
 //// You’ll need to install mocha and chai first.
 
-//// Define `TestClassName` and `TestMeta` for './test-base-isomorphic.js'.
-global.TestClassName = 'Seqin'
+//// Define `TestMeta` - this has been copied from the main script.
 global.TestMeta = {
-//// This has been copy-pasted from the main script:
     NAME:    { value:'Seqin'    }
-  , ID:      { value:'si'       }
-  , VERSION: { value:'0.0.14'    }
-  , SPEC:    { value:'20170705' }
+  , ID:      { value:'base'     }
+  , VERSION: { value:'1.0.0'    }
+  , SPEC:    { value:'20170728' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
 it just generates silent buffers.` }
@@ -22,7 +20,7 @@ global.AudioContext = class AudioContext {}
 global.AudioContext.prototype.sampleRate = 48000
 
 //// Load the class to be tested.
-require('../'+global.TestClassName)
+require('../seqin-'+global.TestMeta.ID.value)
 
 //// Run the tests.
 require('./test-base-isomorphic')

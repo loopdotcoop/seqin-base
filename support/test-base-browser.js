@@ -13,8 +13,16 @@ const
   , ok        = a.isOk
 
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
-    //// window.TestClassName = 'MyGreatSeqin'
-  , TestClass = SEQIN[ROOT.TestClassName]
+    //// window.TestMeta = { // replace `window` with `global` for Node.js
+    ////     NAME:    { value:'MyGreatSeqin' }
+    ////   , ID:      { value:'mygt'       }
+    ////   , VERSION: { value:'1.2.3'    }
+    ////   , SPEC:    { value:'20170728' }
+    ////   , HELP:    { value: 'This is literally the best Seqin ever made!' }
+    //// }
+  , TestMeta = ROOT.TestMeta
+  , TestClassName = TestMeta.NAME.value
+  , TestClass = SEQIN[TestClassName]
 
 
 describe(`Test base browser '${ROOT.TestClassName}'`, () => {
