@@ -3,7 +3,7 @@
 const META = {
     NAME:    { value:'Seqin'    }
   , ID:      { value:'base'     }
-  , VERSION: { value:'1.0.1'    }
+  , VERSION: { value:'1.0.2'    }
   , SPEC:    { value:'20170728' }
   , HELP:    { value:
 `The base class for all sequencer instruments. It’s not usually used directly -
@@ -67,6 +67,9 @@ it just generates silent buffers.` }
 const SEQIN = ROOT.SEQIN = ROOT.SEQIN || {}
 
 SEQIN.Seqin = class Seqin {
+
+
+
 
     //// INSTANTIATE
 

@@ -1,6 +1,6 @@
 {
   "name": "seqin-base",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The base class for all sequencer instruments",
   "main": "seqin-base.js",
   "directories": {

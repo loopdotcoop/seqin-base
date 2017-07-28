@@ -1,5 +1,6 @@
-//// 'base', because these tests can be run unmodified by all subclasses, eg
-//// MathSeqin just replaces `TestClass = Seqin` with `TestClass = MathSeqin`.
+//// 'base', because these tests can be run unmodified by all sub-classes,
+//// whether they’re second-tier (extend the base Seqin class directly), or
+//// third-tier (extend a second-tier class, like MathSeqin), or fourth-tier.
 
 //// 'browser', because these tests need a fully functional AudioContext. That
 //// means they’ll only run in the browser, not Node.js.
@@ -15,9 +16,9 @@ const
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
     //// window.TestMeta = { // replace `window` with `global` for Node.js
     ////     NAME:    { value:'MyGreatSeqin' }
-    ////   , ID:      { value:'mygt'       }
-    ////   , VERSION: { value:'1.2.3'    }
-    ////   , SPEC:    { value:'20170728' }
+    ////   , ID:      { value:'mygt'         }
+    ////   , VERSION: { value:'1.2.3'        }
+    ////   , SPEC:    { value:'20170728'     }
     ////   , HELP:    { value: 'This is literally the best Seqin ever made!' }
     //// }
   , TestMeta = ROOT.TestMeta
@@ -25,7 +26,7 @@ const
   , TestClass = SEQIN[TestClassName]
 
 
-describe(`Test base browser '${ROOT.TestClassName}'`, () => {
+describe(`Test base browser '${TestClassName}'`, () => {
 
 
     describe('perform()', () => {

@@ -14,9 +14,9 @@ const
     //// To test a `Seqin` subclass called `MyGreatSeqin`, you should have set:
     //// window.TestMeta = { // replace `window` with `global` for Node.js
     ////     NAME:    { value:'MyGreatSeqin' }
-    ////   , ID:      { value:'mygt'       }
-    ////   , VERSION: { value:'1.2.3'    }
-    ////   , SPEC:    { value:'20170728' }
+    ////   , ID:      { value:'mygt'         }
+    ////   , VERSION: { value:'1.2.3'        }
+    ////   , SPEC:    { value:'20170728'     }
     ////   , HELP:    { value: 'This is literally the best Seqin ever made!' }
     //// }
   , TestMeta = ROOT.TestMeta
@@ -24,7 +24,7 @@ const
   , TestClass = SEQIN[TestClassName]
 
 
-describe(`Test specific browser '${ROOT.TestClassName}'`, () => {
+describe(`Test specific browser '${TestClassName}'`, () => {
 
     describe('perform() response', () => {
         const ctx = new (ROOT.AudioContext||ROOT.webkitAudioContext)()
